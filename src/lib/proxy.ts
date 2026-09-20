@@ -174,6 +174,8 @@ export const bytes = (value: number) =>
     : value >= 1024
       ? `${(value / 1024).toFixed(1)} KiB`
       : `${value} B`;
+export const megabitsPerSecond = (bytesPerSecond: number) =>
+  ((bytesPerSecond * 8) / 1_000_000).toFixed(2);
 export const coreName = (node: ProxyNode) =>
   ["anytls", "tuic"].includes(node.protocol) ? "Xray + sing-box" : "Xray";
 export const dateText = (value: string | null) =>

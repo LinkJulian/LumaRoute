@@ -221,6 +221,9 @@ try {
   await windowInvoke("set_size", {
     value: { Logical: { width: 1160, height: 780 } },
   });
+  await windowInvoke("set_position", {
+    value: { Logical: { x: 120, y: 90 } },
+  });
   await expect
     .poll(() =>
       page.evaluate(() => {
@@ -237,6 +240,16 @@ try {
     .toBe(true);
   await page.getByRole("button", { name: "切换到简洁模式" }).click();
   await expect(page.locator(".simple-shell")).toBeVisible();
+  await expect
+    .poll(async () => {
+      const position = await windowInvoke("outer_position");
+      const scale = await windowInvoke("scale_factor");
+      return (
+        Math.abs(position.x / scale - 120) <= 3 &&
+        Math.abs(position.y / scale - 90) <= 3
+      );
+    })
+    .toBe(true);
   await delay(500);
   await windowInvoke("set_size", {
     value: { Logical: { width: 980, height: 700 } },
@@ -263,8 +276,20 @@ try {
       return Math.abs(size.width / scale - 1160) <= 10;
     })
     .toBe(true);
+  await expect
+    .poll(async () => {
+      const position = await windowInvoke("outer_position");
+      const scale = await windowInvoke("scale_factor");
+      return (
+        Math.abs(position.x / scale - 120) <= 3 &&
+        Math.abs(position.y / scale - 90) <= 3
+      );
+    })
+    .toBe(true);
+  await expect(page.getByText("我的连接", { exact: true })).toHaveCount(0);
+  await expect(page.locator(".toolbar-title")).toHaveText("概览");
   check(
-    "Window position/size memory per mode, DPI conversion and titlebar double-click maximize",
+    "Window position stays fixed across modes and the redundant navigation level is removed",
   );
   const nav = (name) =>
     page
@@ -306,7 +331,7 @@ try {
   await page.getByRole("button", { name: "导入节点", exact: true }).click();
   const dialog = page.getByRole("dialog");
   await dialog
-    .getByLabel("节点内容")
+    .getByLabel("导入内容")
     .fill(`http://127.0.0.1:${fixturePort}#Native-Fixture`);
   await dialog.getByRole("button", { name: "导入节点", exact: true }).click();
   await expect(dialog).toHaveCount(0);
@@ -429,12 +454,11 @@ try {
   await nav("日志").click();
   await page.getByRole("button", { name: "运行诊断" }).click();
   await expect
-    .poll(async () => (await snapshot()).job.running, { timeout: 5000 })
-    .toBe(true);
-  await expect
-    .poll(async () => (await snapshot()).job.running, { timeout: 45000 })
-    .toBe(false);
-  expect((await snapshot()).diagnostics.checks).toHaveLength(11);
+    .poll(async () => (await snapshot()).diagnostics.checks.length, {
+      timeout: 45000,
+    })
+    .toBe(11);
+  expect((await snapshot()).job.running).toBe(false);
   await expect(page.locator(".diagnostic-report")).toContainText(
     "核心文件与版本",
   );

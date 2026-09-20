@@ -232,12 +232,6 @@ p {
   letter-spacing: 1px;
   margin-top: 5px;
 }
-.nav-label {
-  color: var(--muted);
-  font-size: 12px;
-  margin: 0 13px 13px;
-  letter-spacing: 1.3px;
-}
 .nav-item {
   width: 100%;
   display: flex;
@@ -352,15 +346,10 @@ p {
   align-items: center;
   gap: 8px;
 }
-.breadcrumb {
-  display: flex;
-  gap: 12px;
-  align-items: center;
+.toolbar-title {
   font-size: 13px;
-  color: var(--muted);
-}
-.breadcrumb > span {
   color: var(--text);
+  font-weight: 600;
 }
 .icon-button {
   width: 36px;

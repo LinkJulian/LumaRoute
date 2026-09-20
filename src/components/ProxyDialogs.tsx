@@ -68,24 +68,78 @@ export function ImportDialog({
   onClose: () => void;
 }) {
   const [payload, setPayload] = useState("");
+  const [importType, setImportType] = useState<
+    "auto" | "nodes" | "subscription"
+  >("auto");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const file = useRef<HTMLInputElement>(null);
   return (
     <Modal
       title="导入节点"
-      description="粘贴分享链接、Base64、Clash Meta YAML 或 sing-box JSON。不会读取旧版数据。"
+      description="粘贴订阅 URL、分享链接、Base64、Clash Meta YAML 或 sing-box JSON。不会读取旧版数据。"
       onClose={onClose}
     >
       <form
         onSubmit={async (e) => {
           e.preventDefault();
           if (!payload.trim()) {
-            setError("请先粘贴节点内容");
+            setError("请先粘贴导入内容");
             return;
           }
           setBusy(true);
-          const r = await run("import", { payload });
+          const trimmed = payload.trim();
+          let subscriptionUrl: URL | null = null;
+          if (!trimmed.match(/\s/)) {
+            try {
+              const parsed = new URL(trimmed);
+              if (["http:", "https:"].includes(parsed.protocol))
+                subscriptionUrl = parsed;
+            } catch {}
+          }
+          const importAsSubscription =
+            importType === "subscription" ||
+            (importType === "auto" &&
+              subscriptionUrl !== null &&
+              !subscriptionUrl.username &&
+              !subscriptionUrl.password &&
+              !subscriptionUrl.hash);
+          if (importAsSubscription) {
+            if (!subscriptionUrl) {
+              setBusy(false);
+              setError("订阅链接必须是单个 HTTP/HTTPS URL");
+              return;
+            }
+            const saved = await run("saveSubscription", {
+              subscription: {
+                id: "",
+                name: subscriptionUrl.hostname.replace(/^www\./, ""),
+                url: subscriptionUrl.href,
+                intervalHours: 0,
+                lastUpdated: null,
+                lastAttempt: null,
+                error: null,
+                format: "",
+                uploadBytes: null,
+                downloadBytes: null,
+                totalBytes: null,
+                expiresAt: null,
+              } satisfies Subscription,
+            });
+            if (!saved.ok) {
+              setBusy(false);
+              return;
+            }
+            const updated = await run(
+              "updateSubscription",
+              { id: saved.result as string },
+              "订阅已添加，正在获取节点",
+            );
+            setBusy(false);
+            if (updated.ok) onClose();
+            return;
+          }
+          const r = await run("import", { payload: trimmed });
           setBusy(false);
           if (r.ok) {
             const result = r.result as { added: number; rejected: number };
@@ -97,17 +151,31 @@ export function ImportDialog({
         }}
       >
         <label className="field-label" htmlFor="node-import">
-          节点内容
+          导入内容
         </label>
         <textarea
           id="node-import"
           rows={8}
           value={payload}
           onChange={(e) => setPayload(e.target.value)}
-          placeholder="vless://… 或 proxies: …"
+          placeholder="https://…/subscription、vless://… 或 proxies: …"
           autoFocus
           spellCheck={false}
         />
+        <label className="field-label" htmlFor="node-import-type">
+          内容类型
+        </label>
+        <select
+          id="node-import-type"
+          value={importType}
+          onChange={(event) =>
+            setImportType(event.target.value as typeof importType)
+          }
+        >
+          <option value="auto">自动识别</option>
+          <option value="subscription">订阅链接</option>
+          <option value="nodes">节点内容</option>
+        </select>
         <input
           ref={file}
           hidden

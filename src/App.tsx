@@ -3,7 +3,6 @@ import * as Tooltip from "@radix-ui/react-tooltip";
 import { isTauri } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import {
-  ChevronRight,
   Moon,
   Sun,
   X,
@@ -127,7 +126,6 @@ export default function App() {
                     <small>连接，从容一点。</small>
                   </div>
                 </div>
-                <div className="nav-label">我的连接</div>
                 <nav aria-label="主导航">
                   {pages.map((p) => (
                     <button
@@ -168,10 +166,8 @@ export default function App() {
               </aside>
               <div className="main-shell">
                 <div className="toolbar">
-                  <div className="breadcrumb">
-                    我的连接
-                    <ChevronRight size={13} />
-                    <span>{pages.find((p) => p.id === page)?.label}</span>
+                  <div className="toolbar-title">
+                    {pages.find((p) => p.id === page)?.label}
                   </div>
                   <div className="toolbar-actions">
                     <Hint label="切换到简洁模式">

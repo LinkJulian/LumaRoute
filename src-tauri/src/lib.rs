@@ -252,7 +252,13 @@ pub fn run() {
                 }
             });
             let show = MenuItem::with_id(app, "show", "打开 LumaRoute", true, None::<&str>)?;
-            let status = MenuItem::with_id(app, "status", "↑ 0 B/s  ↓ 0 B/s", false, None::<&str>)?;
+            let status = MenuItem::with_id(
+                app,
+                "status",
+                "↑ 0.00 Mb/s  ↓ 0.00 Mb/s",
+                false,
+                None::<&str>,
+            )?;
             let current =
                 MenuItem::with_id(app, "current", "当前节点：未选择", false, None::<&str>)?;
             let connect = MenuItem::with_id(app, "connect-toggle", "连接", true, None::<&str>)?;
@@ -414,13 +420,8 @@ pub fn run() {
                 let recent_items = [recent0, recent1, recent2];
                 while !tray_state.exit.load(Ordering::SeqCst) {
                     let snapshot = tray_state.snapshot();
-                    let speed = |bytes: u64| {
-                        if bytes >= 1_048_576 {
-                            format!("{:.1} MiB/s", bytes as f64 / 1_048_576.0)
-                        } else {
-                            format!("{:.0} KiB/s", bytes as f64 / 1024.0)
-                        }
-                    };
+                    let speed =
+                        |bytes: u64| format!("{:.2} Mb/s", bytes as f64 * 8.0 / 1_000_000.0);
                     let _ = status.set_text(format!(
                         "{} · ↑ {}  ↓ {}",
                         connection_status_label(&snapshot.connection.status),

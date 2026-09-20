@@ -17,6 +17,7 @@ import {
   connectionStatusText,
   coreName,
   dateText,
+  megabitsPerSecond,
   type Snapshot,
 } from "../lib/proxy";
 import type { Run } from "../components/ProxyDialogs";
@@ -144,16 +145,16 @@ export function ProxyOverview({
           <ArrowDown size={19} />
           <small>实时下载</small>
           <strong>
-            {bytes(traffic.downloadSpeed)}
-            <em>/s</em>
+            {megabitsPerSecond(traffic.downloadSpeed)}
+            <em>Mb/s</em>
           </strong>
         </div>
         <div className="metric">
           <ArrowUp size={19} />
           <small>实时上传</small>
           <strong>
-            {bytes(traffic.uploadSpeed)}
-            <em>/s</em>
+            {megabitsPerSecond(traffic.uploadSpeed)}
+            <em>Mb/s</em>
           </strong>
         </div>
         <div className="metric">

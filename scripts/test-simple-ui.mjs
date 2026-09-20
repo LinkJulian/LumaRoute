@@ -265,6 +265,17 @@ try {
   await page.screenshot({
     path: resolve(artifactRoot, "simple-mode-1280x860.png"),
   });
+  await page.getByRole("button", { name: "完整模式" }).click();
+  await page
+    .getByRole("navigation", { name: "主导航" })
+    .getByRole("button", { name: "节点", exact: true })
+    .click();
+  await page.getByRole("button", { name: "导入节点", exact: true }).click();
+  await page.getByLabel("导入内容").fill("https://import.example/subscription");
+  await page.getByRole("button", { name: "导入节点", exact: true }).click();
+  await expect(page.getByRole("dialog")).toBeHidden();
+  await page.getByRole("button", { name: "切换到简洁模式" }).click();
+  await expect(page.locator(".simple-shell")).toBeVisible();
   await page.getByRole("button", { name: "添加订阅" }).click();
   await expect(page.getByLabel("订阅名称")).toHaveValue("clipboard.example");
   await expect(page.getByText("域名预览：clipboard.example")).toBeVisible();

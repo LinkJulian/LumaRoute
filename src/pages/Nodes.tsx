@@ -164,7 +164,7 @@ export function Nodes({
                   {n.lastError
                     ? "失败"
                     : n.lastTestMode === "download" && n.downloadMbps !== null
-                      ? `${n.downloadMbps.toFixed(2)} MiB/s`
+                      ? `${(n.downloadMbps * 8.388608).toFixed(2)} Mb/s`
                       : n.delayMs !== null
                         ? `${n.delayMs} ms`
                         : "—"}
